@@ -1,18 +1,20 @@
 import http from '@/utils/http';
 import type { IpLocationResponseType, GeocodeResponseType, WeatherResponseType } from '@/types/gmap';
 
-// ip定位
+/**
+ * @description IP定位
+ */
 export const getIpLocation = () => {
   return http<IpLocationResponseType>({
     url: '/ip',
     method: 'get',
-    params: {
-      ip: '127.0.0.1',
-    },
   });
 };
 
-// 地理编码
+/**
+ * @description 地理编码
+ * @param address - 搜索地址名称，支持：省、市、区县、街道、门牌号、地名等
+ */
 export const getGeocode = (address: string) => {
   return http<GeocodeResponseType>({
     url: '/geocode/geo',

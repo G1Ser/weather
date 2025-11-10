@@ -1,29 +1,20 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
-import type { AppConfigType } from '@/types/config';
 
 const axiosInstance = axios.create({
   baseURL: 'https://restapi.amap.com/v3',
   timeout: 10000,
 });
 
-const loadConfig = async () => {
-  let appConfig: AppConfigType | null = null;
-  const response = await fetch('/app.config.json');
-  appConfig = await response.json();
-  return appConfig;
-};
-
 // 请求拦截器
 axiosInstance.interceptors.request.use(
-  async config => {
-    const cfg = await loadConfig();
-
+  config => {
     // 自动添加 key 参数
-    if (cfg?.amapKey) {
+    const amapKey = import.meta.env.VITE_AMAP_KEY;
+    if (amapKey) {
       config.params = {
         ...config.params,
-        key: cfg.amapKey,
+        key: amapKey,
       };
     }
 
