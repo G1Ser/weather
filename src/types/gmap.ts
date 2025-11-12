@@ -1,6 +1,6 @@
 export interface IpLocationResponseType {
-  province: string;
-  city: string;
+  province: string | string[];
+  city: string | string[];
   adcode: string;
   rectangle: string;
 }
@@ -26,23 +26,32 @@ export interface WeatherLivesType {
   windpower: string;
   humidity: string;
 }
-
+export interface WeatherCastsType {
+  date: string;
+  week: number;
+  dayweather: string;
+  nightweather: string;
+  daytemp: string;
+  nighttemp: string;
+  daywind: string;
+  nightwind: string;
+  daypower: string;
+  nightpower: string;
+}
 export interface WeatherForecastsType {
-  casts: {
-    date: string;
-    week: string;
-    dayweather: string;
-    nightweather: string;
-    daytemp: string;
-    nighttemp: string;
-    daywind: string;
-    nightwind: string;
-    daypower: string;
-    nightpower: string;
-  }[];
+  casts: WeatherCastsType[];
 }
 
 export interface WeatherResponseType {
   lives: WeatherLivesType[];
   forecasts: WeatherForecastsType[];
+}
+
+export interface WeatherChartDataType {
+  date: string;
+  week: string;
+  weather: string;
+  icon: string;
+  maxTemp: string;
+  minTemp: string;
 }

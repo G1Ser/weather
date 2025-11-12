@@ -27,6 +27,6 @@
   .router-container {
     width: 100%;
     flex: 1;
-    padding: 0 300px;
+    padding: 0 min(15vw, 200px);
   }
 </style>

@@ -1,25 +1,31 @@
 <template>
   <div class="header-container">
     <SvgIcon name="home" size="48px" class="cursor-pointer" @click="router.push('/')" />
-    <span>{{ location }}</span>
+    <span>{{ localLocation }}</span>
+    <span>{{ lives?.temperature }}℃</span>
+    <span>{{ lives?.weather }}</span>
+    <span>{{ lives?.winddirection }}风{{ lives?.windpower }}级</span>
+    <span>{{ lives?.humidity }}%</span>
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
+  import { storeToRefs } from 'pinia';
   import router from '@/router';
   import SvgIcon from './SvgIcon.vue';
-  import { getIpLocation, getGeocode, getWeather } from '@/api/gmap';
+  import { useIPStore } from '@/store/IP';
+  import { getLocationWeather } from '@/utils/gmap';
+  import type { WeatherLivesType } from '@/types/gmap';
 
-  const location = ref('');
+  const IPStore = useIPStore();
+  const { localLocation } = storeToRefs(IPStore);
+  const lives = ref<WeatherLivesType>();
 
   onMounted(async () => {
-    const res_location = await getIpLocation();
-    location.value = res_location.province || res_location.city || '';
-    const res = await getGeocode(location.value);
-    const adcode = res.geocodes[0].adcode;
-    await getWeather(adcode);
-    await getWeather(adcode, 'all');
+    await IPStore.initLocation();
+    const weatherInfo = await getLocationWeather(localLocation.value);
+    lives.value = weatherInfo.lives[0];
   });
 </script>
 
@@ -31,7 +37,7 @@
     gap: 20px;
     width: 100%;
     height: 100%;
-    padding: 0 300px;
+    padding: 0 min(15vw, 200px);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     font-size: 16px;
     color: var(--text-color);
