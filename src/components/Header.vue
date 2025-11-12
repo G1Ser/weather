@@ -16,10 +16,10 @@
   onMounted(async () => {
     const res_location = await getIpLocation();
     location.value = res_location.province || res_location.city || '';
-    // const res = await getGeocode('shanghai');
-    // const adcode = res.geocodes[0].adcode;
-    // await getWeather(adcode);
-    // await getWeather(adcode, 'all');
+    const res = await getGeocode(location.value);
+    const adcode = res.geocodes[0].adcode;
+    await getWeather(adcode);
+    await getWeather(adcode, 'all');
   });
 </script>
 
