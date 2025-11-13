@@ -9,7 +9,15 @@
   </div>
 </template>
 <script setup lang="ts">
+  import { onMounted } from 'vue';
   import Header from './components/Header.vue';
+  import { useIPStore } from '@/store/IP';
+  const IPStore = useIPStore();
+
+  onMounted(async () => {
+    await IPStore.initLocation();
+    await IPStore.initGeocode();
+  });
 </script>
 <style lang="scss" scoped>
   .app-container {

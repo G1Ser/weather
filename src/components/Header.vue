@@ -10,23 +10,25 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, watch } from 'vue';
   import { storeToRefs } from 'pinia';
   import router from '@/router';
   import SvgIcon from './SvgIcon.vue';
   import { useIPStore } from '@/store/IP';
-  import { getLocationWeather } from '@/utils/gmap';
   import type { WeatherLivesType } from '@/types/gmap';
+  import { getWeather } from '@/api/gmap';
 
   const IPStore = useIPStore();
-  const { localLocation } = storeToRefs(IPStore);
+  const { localLocation, localGeocode } = storeToRefs(IPStore);
   const lives = ref<WeatherLivesType>();
-
-  onMounted(async () => {
-    await IPStore.initLocation();
-    const weatherInfo = await getLocationWeather(localLocation.value);
-    lives.value = weatherInfo.lives[0];
-  });
+  watch(
+    () => localGeocode.value,
+    async () => {
+      if (!localGeocode.value) return;
+      const weatherInfo = await getWeather(localGeocode.value);
+      lives.value = weatherInfo.lives[0];
+    }
+  );
 </script>
 
 <style lang="scss" scoped>
