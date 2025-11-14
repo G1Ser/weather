@@ -4,63 +4,88 @@
       <div v-for="cast in casts" :key="cast.date" class="header-item">
         <p>{{ cast.week }}</p>
         <p>{{ cast.date }}</p>
-        <SvgIcon :name="cast.icon" size="24px" />
+        <SvgIcon :name="cast.icon" size="36px" />
         <p>{{ cast.weather }}</p>
       </div>
     </div>
-    <div ref="chartRef" class="chart-body"></div>
+    <div ref="chartRef" class="chart-body" />
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, watch, onMounted } from 'vue';
-  import * as echarts from 'echarts';
+  import { ref, watch, onMounted, onUnmounted } from 'vue';
+  import { init, use } from 'echarts/core';
+  import type { ECharts } from 'echarts/core';
+  import { LineChart } from 'echarts/charts';
+  import { GridComponent } from 'echarts/components';
+  import { CanvasRenderer } from 'echarts/renderers';
+  import { debounce } from 'lodash-es';
   import SvgIcon from '@/components/SvgIcon.vue';
   import type { WeatherChartDataType } from '@/types/gmap';
+
+  use([LineChart, GridComponent, CanvasRenderer]);
 
   const props = defineProps<{
     casts: WeatherChartDataType[];
   }>();
 
   const chartRef = ref<HTMLElement>();
-  let chartInstance: echarts.ECharts;
+  let chartInstance: ECharts;
 
   const initChart = () => {
     if (chartRef.value) {
-      chartInstance = echarts.init(chartRef.value);
+      chartInstance = init(chartRef.value);
       renderChart();
     }
   };
+
+  const handleResize = debounce(() => {
+    chartInstance?.resize();
+  }, 300);
 
   const renderChart = () => {
     if (!chartInstance || !props.casts || props.casts.length === 0) return;
 
     const option = {
       grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true,
+        left: '12%',
+        right: '12%',
+        top: '10%',
+        bottom: '10%',
+        containLabel: false,
       },
       xAxis: {
-        show: false,
         type: 'category',
         boundaryGap: false,
-        data: props.casts.map((c) => c.date),
+        data: props.casts.map(c => c.date),
+        show: false,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
       },
       yAxis: {
-        show: false,
         type: 'value',
+        show: false,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
       },
       series: [
         {
           name: '最高温',
           type: 'line',
-          data: props.casts.map((c) => c.maxTemp),
+          data: props.casts.map(c => c.maxTemp),
           smooth: true,
           itemStyle: {
             color: '#FF5733',
           },
+          lineStyle: {
+            width: 2,
+          },
+          symbol: 'circle',
+          symbolSize: 6,
           label: {
             show: true,
             position: 'top',
@@ -70,11 +95,16 @@
         {
           name: '最低温',
           type: 'line',
-          data: props.casts.map((c) => c.minTemp),
+          data: props.casts.map(c => c.minTemp),
           smooth: true,
           itemStyle: {
             color: '#33AFFF',
           },
+          lineStyle: {
+            width: 2,
+          },
+          symbol: 'circle',
+          symbolSize: 6,
           label: {
             show: true,
             position: 'bottom',
@@ -91,6 +121,12 @@
 
   onMounted(() => {
     initChart();
+    window.addEventListener('resize', handleResize);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+    chartInstance?.dispose();
   });
 
   watch(

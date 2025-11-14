@@ -4,7 +4,6 @@
 
 - Vue 3
 - TypeScript
-- Bootstrap
 - ECharts
 - Vite
 
