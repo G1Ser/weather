@@ -211,10 +211,10 @@ async function handleGeocodeQuery(request, env, origin) {
  */
 async function handleWeatherQuery(request, env, origin) {
   const url = new URL(request.url);
-  const adcode = url.searchParams.get('adcode');
+  const city = url.searchParams.get('city');
   const extensions = url.searchParams.get('extensions') || 'base';
-  if (!adcode) {
-    return new Response(JSON.stringify({ error: 'Bad Request', message: 'Adcode is required' }), {
+  if (!city) {
+    return new Response(JSON.stringify({ error: 'Bad Request', message: 'city is required' }), {
       status: 400,
       headers: {
         'Content-Type': 'application/json',
@@ -222,7 +222,7 @@ async function handleWeatherQuery(request, env, origin) {
       },
     });
   }
-  const cacheKey = `weather:${adcode}:${extensions}`;
+  const cacheKey = `weather:${city}:${extensions}`;
   const cachedResponse = await env.CACHE.get(cacheKey);
   if (cachedResponse) {
     return new Response(cachedResponse, {
@@ -234,7 +234,7 @@ async function handleWeatherQuery(request, env, origin) {
       },
     });
   }
-  const response = await fetch(`${API_BASE_URL}/weather/weatherInfo?adcode=${adcode}&extensions=${extensions}&key=${env.AMAP_KEY}`);
+  const response = await fetch(`${API_BASE_URL}/weather/weatherInfo?city=${city}&extensions=${extensions}&key=${env.AMAP_KEY}`);
   const data = await response.text();
   await env.CACHE.put(cacheKey, data, {
     expirationTtl: CACHE_TTL.WEATHER.kv,
