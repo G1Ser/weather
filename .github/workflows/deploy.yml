@@ -34,7 +34,7 @@ jobs:
         run: pnpm build
         env:
           VITE_LOCAL_LOCATION: '北京'
-          VITE_AMAP_API: 'https://wt-prod-k8m3.chancey.work'
+          VITE_AMAP_API: 'https://wt-prod-k8m3.chauncey.work'
 
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
