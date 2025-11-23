@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
@@ -30,10 +28,13 @@ jobs:
           cache: 'pnpm'
 
       - name: 安装依赖
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 构建项目
         run: pnpm build
+        env:
+          VITE_LOCAL_LOCATION: '北京'
+          VITE_AMAP_API: 'https://wt-prod-k8m3.chancey.work'
 
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -41,6 +42,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           publish_branch: gh-pages
-          keep_files: false
-          # 保持 CNAME 文件
           cname: app.chauncey.work
