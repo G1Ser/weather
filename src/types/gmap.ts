@@ -1,8 +1,9 @@
 export interface IpLocationResponseType {
-  province: string | string[];
-  city: string | string[];
-  adcode: string;
-  rectangle: string;
+  city: string;
+  country: string;
+  lat: string;
+  lon: string;
+  regionName: string;
 }
 
 export type GeocodeLevelType = '省' | '市' | '区县';

@@ -8,8 +8,8 @@ export const useIPStore = defineStore('IP', () => {
   const localGeocode = ref('');
   const initLocation = async () => {
     const res = await getIpLocation();
-    if (Array.isArray(res.province) || Array.isArray(res.city)) return;
-    localLocation.value = res.province || res.city;
+    if (res.country !== '中国') return;
+    localLocation.value = res.city;
   };
   const initGeocode = async () => {
     localGeocode.value = await getLocationGeocode(localLocation.value);
