@@ -29,21 +29,10 @@
     "jsx": "preserve",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* 类型声明 */
-    "types": ["node", "webpack-env"]
+    "forceConsistentCasingInFileNames": true
   },
 
   /* 包含和排除的文件 */
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "types/**/*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "types/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }

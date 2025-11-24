@@ -6,5 +6,3 @@ dist
 
 # Environment variables
 .env
-.env.development
-.env.production

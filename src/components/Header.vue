@@ -9,44 +9,45 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex';
-import SvgIcon from './SvgIcon.vue';
-import { getWeather } from '@/api/gmap';
+<script lang="ts">
+  import { mapGetters } from 'vuex';
+  import SvgIcon from './SvgIcon.vue';
+  import type { WeatherLivesType } from '@/types/gmap';
+  import { getWeather } from '@/api/gmap';
 
-export default {
-  name: 'Header',
-  components: {
-    SvgIcon,
-  },
-  data() {
-    return {
-      lives: null,
-    };
-  },
-  computed: {
-    ...mapGetters('IP', ['localLocation', 'localGeocode']),
-  },
-  watch: {
-    async localGeocode(newVal) {
-      if (!newVal) return;
-      const weatherInfo = await getWeather(newVal);
-      this.lives = weatherInfo.lives[0];
+  export default {
+    name: 'Header',
+    components: {
+      SvgIcon,
     },
-  },
-};
+    data() {
+      return {
+        lives: {} as WeatherLivesType,
+      };
+    },
+    computed: {
+      ...mapGetters('IP', ['localLocation', 'localGeocode']),
+    },
+    watch: {
+      async localGeocode(newVal) {
+        if (!newVal) return;
+        const weatherInfo = await getWeather(newVal);
+        this.lives = weatherInfo.lives[0];
+      },
+    },
+  };
 </script>
 
 <style lang="scss" scoped>
-.header-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  height: 100%;
-  padding: 0 min(15vw, 200px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  font-size: 16px;
-  color: var(--text-color);
-}
+  .header-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    padding: 0 min(15vw, 200px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    font-size: 16px;
+    color: var(--text-color);
+  }
 </style>

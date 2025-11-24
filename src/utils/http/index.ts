@@ -1,8 +1,10 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const axiosInstance = axios.create({
-  baseURL: process.env.VUE_APP_AMAP_API,
+  baseURL: isDev ? process.env.VUE_APP_AMAP_API_DEV : process.env.VUE_APP_AMAP_API_PROD,
   timeout: 10000,
 });
 

@@ -4,8 +4,6 @@ import router from './router';
 import store from './store';
 import './main.scss';
 
-Vue.config.productionTip = false;
-
 new Vue({
   router,
   store,
