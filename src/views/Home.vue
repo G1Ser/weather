@@ -1,18 +1,31 @@
 <template>
   <div class="home-container">
+    <div class="search-container">
+      <input v-model="searchAddress" type="text" class="search-input" placeholder="输入城市名" autocomplete="off" />
+      <div v-if="showPopper" class="popper">
+        <div v-if="isSearching" class="popper-item">正在搜索...</div>
+        <template v-else>
+          <div v-for="result in searchResults" :key="result.adcode" class="popper-item">
+            {{ result.city || result.district || result.province }}
+          </div>
+          <div v-if="!searchResults.length" class="popper-item">找不到该地区</div>
+        </template>
+      </div>
+    </div>
     <main class="weather-info">
       <p>近期天气</p>
-      <WeatherChart v-if="casts" :casts="casts" />
+      <WeatherChart :is-loading="isLoading" :casts="casts" />
     </main>
   </div>
 </template>
 
 <script lang="ts">
   import { mapGetters } from 'vuex';
+  import { debounce } from 'lodash-es';
   import WeatherChart from '@/components/WeatherChart.vue';
   import { formatWeatherCasts } from '@/utils/gmap';
-  import type { WeatherChartDataType } from '@/types/gmap';
-  import { getWeather } from '@/api/gmap';
+  import type { WeatherChartDataType, GeocodeType } from '@/types/gmap';
+  import { getWeather, getGeocode } from '@/api/gmap';
 
   export default {
     name: 'Home',
@@ -22,16 +35,52 @@
     data() {
       return {
         casts: [] as WeatherChartDataType[],
+        isLoading: true,
+        searchAddress: '',
+        searchResults: [] as GeocodeType[],
+        isSearching: false,
+        showPopper: false,
+        debouncedSearch: null as (() => void) | null,
       };
     },
     computed: {
       ...mapGetters('IP', ['localGeocode']),
     },
     watch: {
-      async localGeocode(newVal) {
-        if (!newVal) return;
-        const weatherInfo = await getWeather(newVal, 'all');
-        this.casts = formatWeatherCasts(weatherInfo.forecasts[0].casts);
+      localGeocode(newVal) {
+        if (newVal) {
+          this.fetchWeatherData(newVal);
+        }
+      },
+      searchAddress(newVal) {
+        if (newVal.trim()) {
+          this.showPopper = true;
+          this.isSearching = true;
+          this.debouncedSearch?.();
+        }
+      },
+    },
+    created() {
+      this.debouncedSearch = debounce(async () => {
+        try {
+          const geocodeInfo = await getGeocode(this.searchAddress);
+          this.searchResults = geocodeInfo.geocodes || [];
+        } finally {
+          this.isSearching = false;
+        }
+      }, 500);
+    },
+    methods: {
+      async fetchWeatherData(geocode: string) {
+        this.isLoading = true;
+        try {
+          const weatherInfo = await getWeather(geocode, 'all');
+          if (weatherInfo.forecasts && weatherInfo.forecasts.length > 0) {
+            this.casts = formatWeatherCasts(weatherInfo.forecasts[0].casts);
+          }
+        } finally {
+          this.isLoading = false;
+        }
       },
     },
   };
@@ -41,11 +90,74 @@
   .home-container {
     width: 100%;
     height: 100%;
+    padding-top: 20px;
     color: var(--text-color);
   }
+
+  .search-container {
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-color);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+    text-align: center;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+      border-color: var(--primary-color);
+    }
+  }
+
+  .popper {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 10;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .popper-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--primary-color);
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .weather-info {
+    & > p {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+  }
+
   .chart-container {
     width: 100%;
-    height: 400px;
     padding: 10px;
     background-color: var(--secondary-color);
     border-radius: 10px;
