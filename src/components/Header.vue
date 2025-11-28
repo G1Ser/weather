@@ -1,6 +1,8 @@
 <template>
   <div class="header-container">
-    <SvgIcon name="home" size="48px" class="cursor-pointer" @click="$router.push('/')" />
+    <div class="home-btn" @click="toHome">
+      <SvgIcon name="home" size="48px" />
+    </div>
     <template v-if="!isLoading">
       <span>{{ localLocation }}</span>
       <span v-if="lives">{{ lives.temperature }}℃</span>
@@ -17,6 +19,15 @@
         <SkeletonItem style="height: 24px; width: 80px" />
       </div>
     </template>
+    <div v-if="showAddButton" class="add-btn" @click="addToFavorites" title="添加收藏">
+      <SvgIcon name="add" size="32px" />
+    </div>
+    <div v-if="showLimitAlert" class="limit-alert">
+      <div class="alert-content">
+        <p>收藏夹已满（最多10个），请先删除一些城市。</p>
+        <button @click="showLimitAlert = false">关闭</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,21 +48,67 @@
       return {
         lives: {} as WeatherLivesType,
         isLoading: true,
+        showLimitAlert: false,
       };
     },
     computed: {
       ...mapGetters('IP', ['localLocation', 'localGeocode']),
+      showAddButton() {
+        return this.$route.name === 'City';
+      },
+    },
+    methods: {
+      toHome() {
+        if (this.$route.path !== '/') {
+          this.$router.push('/');
+        }
+      },
+      async addToFavorites() {
+        const adcode = this.$route.params.adcode;
+        if (!adcode) return;
+
+        const favorites = JSON.parse(localStorage.getItem('favoriteCities') || '[]');
+
+        // Check if already exists
+        if (favorites.some((city: any) => city.adcode === adcode)) {
+          return; // Already favorite
+        }
+
+        if (favorites.length >= 10) {
+          this.showLimitAlert = true;
+          return;
+        }
+
+        try {
+          // Fetch city name
+          const weatherInfo = await getWeather(adcode, 'base');
+          if (weatherInfo.lives && weatherInfo.lives.length > 0) {
+            const cityName = weatherInfo.lives[0].city;
+            favorites.push({
+              adcode: adcode,
+              name: cityName,
+            });
+            localStorage.setItem('favoriteCities', JSON.stringify(favorites));
+            // Force update if needed, or rely on reactivity in Home
+          }
+        } catch (e) {
+          console.error('Failed to add favorite', e);
+        }
+      },
     },
     watch: {
-      async localGeocode(newVal) {
-        if (!newVal) return;
-        this.isLoading = true;
-        try {
-          const weatherInfo = await getWeather(newVal);
-          this.lives = weatherInfo.lives[0];
-        } finally {
-          this.isLoading = false;
-        }
+      localGeocode: {
+        immediate: true,
+        async handler(newVal) {
+          if (!newVal) return;
+          this.isLoading = true;
+          try {
+            const weatherInfo = await getWeather(newVal);
+            this.lives = weatherInfo.lives[0];
+          } finally {
+            this.isLoading = false;
+          }
+        },
       },
     },
   };
@@ -75,5 +132,64 @@
     align-items: center;
     gap: 20px;
     width: 100%;
+  }
+
+  .home-btn {
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: var(--text-color);
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .add-btn {
+    margin-left: auto;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: var(--text-color);
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .limit-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+
+    .alert-content {
+      background: var(--secondary-color);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      p {
+        margin-bottom: 15px;
+      }
+
+      button {
+        padding: 5px 15px;
+        background: var(--primary-color);
+        border: none;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
   }
 </style>

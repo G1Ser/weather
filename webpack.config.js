@@ -65,7 +65,7 @@ module.exports = (env, argv) => {
             {
               loader: 'vue-svg-loader',
               options: {
-                svgo: false,
+                svgo: false, // Disable SVGO to preserve animations and styles
               },
             },
           ],

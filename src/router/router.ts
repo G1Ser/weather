@@ -6,6 +6,11 @@ const routes = [
     name: 'Home',
     component: Home,
   },
+  {
+    path: '/city/:adcode',
+    name: 'City',
+    component: () => import('@/views/City.vue'),
+  },
 ];
 
 export default routes;
